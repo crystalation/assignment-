@@ -28,15 +28,19 @@ router.get("/:_postId", async (req, res) => {
   res.json({ detail });
 });
 
-//게시글 수정
+//게시글 수정 //비밀번호 있어야함
 router.put("/:_postId", async (req, res) => {
   const { _postId } = req.params;
-  const { content } = req.body;
+  const { content, password } = req.body;
 
-  const existsPost = await Post.findById(_postId); //existsPost-->단일 게시물이므로 post로 받아서 찾아보자
+  const existsPost = await Post.findById(_postId);
   if (existsPost) {
-    await Post.updateOne({ _id: _postId }, { $set: { content } });
-    res.json({ success: true }); //게시글이 찾아졌고 수정이 완료되었을 때에만 응답을 보내도록 if 블록 안으로 이동
+    if (existsPost.password === password) {
+      await Post.updateOne({ _id: _postId }, { $set: { content } });
+      res.json({ success: true });
+    } else {
+      return res.status(401).json({ message: "비밀번호가 올바르지 않습니다." });
+    }
   } else {
     return res.status(400).json({ message: "해당 ID의 게시글이 없습니다." });
   }
