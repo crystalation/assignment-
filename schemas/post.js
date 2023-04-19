@@ -2,12 +2,6 @@
 //전체적으로 입력하고 불러올 내용의 틀
 //user, title, password, content, createdAt
 
-// postSchema.virtual("postId").get(function () {
-//   return this._id.toHexString();
-//   });
-
-//   postSchema.set("toJSON", { virtuals: true });
-
 const mongoose = require("mongoose");
 
 const postSchema = new mongoose.Schema({

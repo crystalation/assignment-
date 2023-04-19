@@ -1,14 +1,30 @@
 const mongoose = require("mongoose");
 
-const CommentSchema = new mongoose.Schema(
-  {
-    user: { type: String, required: true },
-    password: { type: String, required: true },
-    content: { type: String, required: true },
-    createdAt: { type: Date, default: Date.now },
+//어떤 게시글의 댓글인지 표기
+//게시글의 id를 string화 해서 연결
+
+const CommentSchema = new mongoose.Schema({
+  user: {
+    type: String,
+    required: true,
   },
-  { versionKey: false }
-);
+  password: {
+    type: String,
+    required: true,
+  },
+  content: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  _postId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Post",
+  },
+});
 
 const Comment = mongoose.model("Comments", CommentSchema);
 module.exports = Comment;
