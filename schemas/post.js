@@ -14,23 +14,10 @@ const postSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  password: {
-    type: String,
-    required: true,
-  },
   content: {
     type: String,
     required: true,
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: null,
-  },
-  comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
 });
 
 const Post = mongoose.model('Posts', postSchema);

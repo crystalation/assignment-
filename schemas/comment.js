@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 //어떤 게시글의 댓글인지 표기
 //게시글의 id를 string화 해서 연결
@@ -22,11 +22,11 @@ const CommentSchema = new mongoose.Schema({
   },
   _postId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Post",
+    ref: 'Post',
   },
 });
 
-const Comment = mongoose.model("Comments", CommentSchema);
+const Comment = mongoose.model('Comments', CommentSchema);
 module.exports = Comment;
 
 // var NoticeSchema = new mongoose.Schema({
