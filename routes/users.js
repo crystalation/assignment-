@@ -3,7 +3,7 @@ const router = express.Router();
 const User = require('../schemas/user');
 
 // 회원가입 API //api/signup
-router.post('/', async (req, res) => {
+router.post('/signup', async (req, res) => {
   const { email, nickname, password, confirmPassword } = req.body;
   // 비번과 확인용 비번이 같은지 확인
   if (password !== confirmPassword) {

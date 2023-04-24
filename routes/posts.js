@@ -3,10 +3,9 @@ const router = express.Router();
 const authMiddleware = require('../middleware/auth-middleware.js');
 
 const Post = require('../schemas/post.js');
-const Comment = require('../schemas/comment.js');
 
 //게시글등록 //로그인 필요 //userId->게시글을 할당
-router.post('/create', authMiddleware, async (req, res) => {
+router.post('/posts/create', authMiddleware, async (req, res) => {
   const { title, password, content } = req.body;
   const { user } = res.locals; // 미들웨어에서 쿠키에서 추출한 user 정보를 가져옴
 
@@ -29,7 +28,7 @@ router.post('/create', authMiddleware, async (req, res) => {
 });
 
 // 게시글 전체 목록 조회하기
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/posts', authMiddleware, async (req, res) => {
   try {
     const posts = await Post.find({}).select('-password -content'); //Post 스키마 안에 있는 password를 제외한 모든 데이터
     res.status(200).json({ posts: posts });
@@ -40,7 +39,7 @@ router.get('/', authMiddleware, async (req, res) => {
 });
 
 // 게시글 상세조회
-router.get('/:_postId', authMiddleware, async (req, res) => {
+router.get('posts/:_postId', authMiddleware, async (req, res) => {
   try {
     const { _postId } = req.params;
     const detail = await Post.findOne({ _id: _postId }).select('-password');
@@ -57,7 +56,7 @@ router.get('/:_postId', authMiddleware, async (req, res) => {
 });
 
 //게시글 수정 //비밀번호 있어야함
-router.put('/:_postId', authMiddleware, async (req, res) => {
+router.put('posts/:_postId', authMiddleware, async (req, res) => {
   try {
     const { _postId } = req.params;
     const { content, password } = req.body;
@@ -94,7 +93,7 @@ router.put('/:_postId', authMiddleware, async (req, res) => {
 });
 
 //게시글 삭제 //비밀번호 있어야함
-router.delete('/:_postId', authMiddleware, async (req, res) => {
+router.delete('posts/:_postId', authMiddleware, async (req, res) => {
   try {
     const { _postId } = req.params;
     const { password } = req.body;
@@ -117,126 +116,5 @@ router.delete('/:_postId', authMiddleware, async (req, res) => {
     res.status(500).json({ message: '게시글 삭제에 실패하였습니다.' });
   }
 });
-
-//게시물의 댓글들 조회
-router.get('/:_postId/comments/', authMiddleware, async (req, res) => {
-  const _postId = req.params._postId;
-  const comments = await Comment.find({ _postId }).select('-password');
-  res.status(200).json({ comments: comments });
-});
-
-//댓글 상세조회
-router.get(
-  '/:_postId/comments/:_commentsId',
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const { _postId, _commentsId } = req.params;
-      const detail = await Comment.findOne({ _id: _commentsId, _postId }); //
-
-      if (!detail) {
-        return res
-          .status(400)
-          .json({ message: '해당 댓글을 조회할 수 없습니다.' });
-      }
-      res.json({ detail });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: '해당 댓글을 조회할 수 없습니다..' });
-    }
-  }
-);
-
-//댓글 등록
-router.post('/:_postId/comments/create', authMiddleware, async (req, res) => {
-  const { user, password, content, createdAt } = req.body;
-  const _postId = req.params._postId;
-
-  try {
-    const createdComments = await Comment.create({
-      user,
-      password,
-      content,
-      createdAt,
-      _postId,
-    });
-
-    const post = await Post.findOneAndUpdate(
-      { _id: _postId },
-      { $push: { comments: createdComments.id } }
-    );
-
-    res
-      .status(200)
-      .json({ message: '댓글을 등록하였습니다.', comments: createdComments });
-  } catch (error) {
-    console.error(error);
-    res.status(400).json({ message: '댓글 등록에 실패하였습니다.' });
-  }
-});
-
-//댓글 수정
-router.put(
-  '/:_postId/comments/:_commentId',
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const { _commentId } = req.params;
-      const { content, password } = req.body;
-
-      const existsComment = await Comment.findById(_commentId);
-
-      if (!existsComment) {
-        return res.status(400).json({ message: '댓글을 찾을 수 없습니다.' });
-      }
-
-      if (existsComment.password !== password) {
-        return res
-          .status(400)
-          .json({ message: '비밀번호가 올바르지 않습니다.' });
-      }
-
-      existsComment.content = content;
-      await existsComment.save();
-
-      res.status(200).json({ message: '댓글을 수정했습니다.', existsComment });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: '댓글 수정에 실패했습니다.' });
-    }
-  }
-);
-
-//댓글삭제
-router.delete(
-  '/:_postId/comments/:_commentId',
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const { _commentId } = req.params;
-      const { password } = req.body; // 요청 본문에서 비밀번호를 추출합니다.
-
-      const comment = await Comment.findById(_postId);
-      if (comment) {
-        if (comment.password !== password) {
-          // 비밀번호 검증 절차입니다.
-          return res
-            .status(400)
-            .json({ message: '비밀번호가 일치하지 않습니다.' });
-        }
-
-        await Comment.deleteOne({ _id: _commentId });
-        res.json({ success: true });
-      } else {
-        return res
-          .status(400)
-          .json({ message: '해당 ID의 게시글이 없습니다.' });
-      }
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ errorMessage: '댓글 삭제에 실패하였습니다.' });
-    }
-  }
-);
 
 module.exports = router;
