@@ -2,11 +2,12 @@
 //전체적으로 입력하고 불러올 내용의 틀
 //user, title, password, content, createdAt
 
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const postSchema = new mongoose.Schema({
   user: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     required: true,
   },
   title: {
@@ -25,10 +26,14 @@ const postSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
+  updatedAt: {
+    type: Date,
+    default: null,
+  },
+  comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
 });
 
-const Post = mongoose.model("Posts", postSchema);
+const Post = mongoose.model('Posts', postSchema);
 module.exports = Post;
 
 // const Post = mongoose.model("Posts", postSchema);
